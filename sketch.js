@@ -752,6 +752,7 @@ async function submitScore() {
   
   const emailInput = document.getElementById('playerEmail');
   const errorDiv = document.getElementById('emailError');
+  const submitButton = document.getElementById('submitButton');
   const email = emailInput.value.trim();
   
   // Clear previous errors
@@ -766,13 +767,10 @@ async function submitScore() {
   }
   
   isSubmittingScore = true;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Submitting...';
   
   try {
-    // Show loading state
-    const submitButton = document.querySelector('.input-group button');
-    submitButton.textContent = 'Submitting...';
-    submitButton.disabled = true;
-
     const { data, error } = await supabaseClient
       .from('highscores')
       .insert([{ player_email: email, score: score }])
@@ -782,8 +780,8 @@ async function submitScore() {
 
     // Success message
     document.querySelector('.input-group').innerHTML = `
-      <div style="color: #0f0; padding: 20px;">
-        <p>Score submitted successfully!</p>
+      <div class="success-message">
+        <p>✓ Score submitted successfully!</p>
         <p>Your score: ${score}</p>
       </div>
     `;
@@ -792,15 +790,15 @@ async function submitScore() {
   } catch (error) {
     console.error('Error:', error);
     errorDiv.textContent = 'Error submitting score. Please try again.';
-    
-    // Reset button
-    const submitButton = document.querySelector('.input-group button');
-    submitButton.textContent = 'Submit Score';
     submitButton.disabled = false;
+    submitButton.textContent = 'Submit Score';
   } finally {
     isSubmittingScore = false;
   }
 }
+
+// Add this to handle form submission
+window.submitScore = submitScore;
 
 // Update touch controls
 function touchStarted(event) {
