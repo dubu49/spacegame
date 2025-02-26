@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Space Shooter Leaderboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script src="supabase-config.js"></script>
+    <script src="sketch.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: 'Arial', sans-serif;
+      }
+      #leaderboardUI {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #0ff;
+        box-shadow: 0 0 20px #0ff;
+        text-align: center;
+      }
+      .input-group {
+        margin: 20px 0;
+      }
+      input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid #0ff;
+        padding: 10px;
+        color: #fff;
+        border-radius: 5px;
+        width: 200px;
+        margin: 10px;
+      }
+      button {
+        background: #0ff;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+      button:hover {
+        background: #00cccc;
+        transform: scale(1.05);
+      }
+      #leaderboard {
+        margin-top: 20px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .leaderboard-entry {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 10px;
+        margin: 5px 0;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+      }
+      .leaderboard-entry:nth-child(1) {
+        background: linear-gradient(45deg, #ffd700, #ffa500);
+      }
+      .leaderboard-entry:nth-child(2) {
+        background: linear-gradient(45deg, #c0c0c0, #a0a0a0);
+      }
+      .leaderboard-entry:nth-child(3) {
+        background: linear-gradient(45deg, #cd7f32, #a0522d);
+      }
+      h2 {
+        color: #0ff;
+        text-shadow: 0 0 10px #0ff;
+      }
+      .error {
+        color: #ff4444;
+        margin: 5px 0;
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="leaderboardUI">
+      <h2>Game Over!</h2>
+      <div class="score-display">
+        <h3>Your Score: <span id="finalScore">0</span></h3>
+      </div>
+      <div class="input-group">
+        <input type="email" id="playerEmail" placeholder="Enter your email">
+        <div id="emailError" class="error"></div>
+        <button onclick="submitScore()">Submit Score</button>
+      </div>
+      <div id="leaderboard">
+        <h3>Top Scores</h3>
+        <div id="leaderboardEntries"></div>
+      </div>
+      <button onclick="restartGame()">Play Again</button>
+    </div>
+  </body>
+</html>
