@@ -39,8 +39,10 @@
         left: 0;
       }
       #leaderboardUI {
-        display: none;
         position: fixed;
+        z-index: 9999;
+        touch-action: manipulation;
+        display: none;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
@@ -50,35 +52,43 @@
         border: 2px solid #0ff;
         box-shadow: 0 0 20px #0ff;
         text-align: center;
-        z-index: 1000;
         max-width: 90%;
         width: 300px;
       }
       .input-group {
         margin: 20px 0;
       }
+      .input-group form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
       input[type="email"] {
         width: 90%;
         padding: 12px;
-        margin: 10px auto;
         font-size: 16px;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid #0ff;
+        border: 2px solid #0ff;
+        background: rgba(0, 0, 0, 0.8);
         color: #fff;
         border-radius: 5px;
+        margin: 10px 0;
         -webkit-appearance: none;
+        appearance: none;
       }
       button {
         width: 90%;
-        padding: 12px;
-        margin: 10px auto;
-        font-size: 16px;
+        padding: 15px;
+        font-size: 18px;
+        margin: 10px 0;
         background: #0ff;
         color: #000;
         border: none;
         border-radius: 5px;
-        cursor: pointer;
+        touch-action: manipulation;
         -webkit-appearance: none;
+        appearance: none;
+        cursor: pointer;
       }
       button:hover {
         background: #00cccc;
@@ -115,6 +125,10 @@
         margin: 5px 0;
         font-size: 0.9em;
       }
+      .restart-button {
+        background: #00ff00;
+        margin-top: 20px;
+      }
     </style>
   </head>
   <body>
@@ -124,15 +138,20 @@
         <h3>Your Score: <span id="finalScore">0</span></h3>
       </div>
       <div class="input-group">
-        <input type="email" id="playerEmail" placeholder="Enter your email">
-        <div id="emailError" class="error"></div>
-        <button onclick="submitScore()">Submit Score</button>
+        <form onsubmit="submitScore(); return false;">
+          <input type="email" id="playerEmail" 
+            placeholder="Enter your email" 
+            inputmode="email" 
+            autocomplete="email">
+          <div id="emailError" class="error"></div>
+          <button type="submit">Submit Score</button>
+        </form>
       </div>
       <div id="leaderboard">
         <h3>Top Scores</h3>
         <div id="leaderboardEntries"></div>
       </div>
-      <button onclick="restartGame()">Play Again</button>
+      <button type="button" class="restart-button" ontouchend="restartGame()">Play Again</button>
     </div>
   </body>
 </html>

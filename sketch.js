@@ -201,6 +201,13 @@ function keyPressed() {
 
 // Restart the game
 function restartGame() {
+  // Clear any existing touch states
+  isTouching = false;
+  touchStartX = 0;
+  touchStartY = 0;
+  lastTouchX = 0;
+
+  // Reset game state
   player = new Player();
   enemies = [];
   bullets = [];
@@ -213,8 +220,14 @@ function restartGame() {
   lastMothershipTime = 0;
   aiPowerups = [];
   player.powerup = null;
-  leaderboardUI.style.display = 'none';
-  loop(); // Restart the game loop
+
+  // Hide leaderboard
+  if (leaderboardUI) {
+    leaderboardUI.style.display = 'none';
+  }
+
+  // Restart game loop
+  loop();
 }
 
 // Spawn enemies in a grid
@@ -741,13 +754,14 @@ async function submitScore() {
   const errorDiv = document.getElementById('emailError');
   const email = emailInput.value.trim();
   
-  // Clear any previous errors
+  // Clear previous errors
   errorDiv.textContent = '';
   
   // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     errorDiv.textContent = 'Please enter a valid email address';
+    emailInput.focus();
     return;
   }
   
@@ -761,25 +775,25 @@ async function submitScore() {
 
     const { data, error } = await supabaseClient
       .from('highscores')
-      .insert([
-        { player_email: email, score: score }
-      ])
+      .insert([{ player_email: email, score: score }])
       .select();
 
     if (error) throw error;
 
-    // Success state
+    // Success message
     document.querySelector('.input-group').innerHTML = `
-      <p style="color: #0f0; margin: 20px 0;">Score submitted successfully!</p>
-      <p>Your score: ${score}</p>
+      <div style="color: #0f0; padding: 20px;">
+        <p>Score submitted successfully!</p>
+        <p>Your score: ${score}</p>
+      </div>
     `;
     
     await updateLeaderboard();
   } catch (error) {
-    console.error('Error submitting score:', error);
+    console.error('Error:', error);
     errorDiv.textContent = 'Error submitting score. Please try again.';
     
-    // Reset button state
+    // Reset button
     const submitButton = document.querySelector('.input-group button');
     submitButton.textContent = 'Submit Score';
     submitButton.disabled = false;
@@ -788,16 +802,15 @@ async function submitScore() {
   }
 }
 
-// Update touch functions
+// Update touch controls
 function touchStarted(event) {
   if (event) event.preventDefault();
   if (touches.length > 0) {
-    touchStartX = touches[0].clientX; // Use clientX instead of x
-    touchStartY = touches[0].clientY; // Use clientY instead of y
+    touchStartX = touches[0].clientX;
+    touchStartY = touches[0].clientY;
     lastTouchX = touchStartX;
     isTouching = true;
     
-    // Fire bullet on tap
     if (!gameOver) {
       player.shoot();
     }
@@ -805,21 +818,12 @@ function touchStarted(event) {
   return false;
 }
 
-function touchMoved(event) {
-  if (event) event.preventDefault();
-  if (isTouching && !gameOver && touches.length > 0) {
-    let touchX = touches[0].clientX; // Use clientX
-    let deltaX = (touchX - lastTouchX) * touchSensitivity;
-    
-    // Move player based on swipe
-    player.x = constrain(player.x + deltaX * 0.8, player.width/2, width - player.width/2);
-    lastTouchX = touchX;
-  }
-  return false;
-}
-
 function touchEnded(event) {
   if (event) event.preventDefault();
+  // Only handle game restart if touching restart button
+  if (gameOver && event.target.classList.contains('restart-button')) {
+    restartGame();
+  }
   isTouching = false;
   return false;
 }
