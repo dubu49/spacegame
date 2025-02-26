@@ -413,10 +413,10 @@ class Player {
     
     // Fix touch movement
     if (isTouching && touches.length > 0) {
-      let touchX = touches[0].clientX || touches[0].x;
+      let touchX = touches[0].pageX || touches[0].clientX || touches[0].x;
       let targetX = constrain(touchX, this.width/2, width - this.width/2);
       // Use smoother movement
-      this.x = lerp(this.x, targetX, 0.15);
+      this.x = lerp(this.x, targetX, 0.1);
     }
   }
 
@@ -712,14 +712,30 @@ class Particle {
 // Add after setup function
 async function showLeaderboard() {
   leaderboardUI = document.getElementById('leaderboardUI');
+  if (!leaderboardUI) {
+    console.error('Leaderboard UI element not found');
+    return;
+  }
+  
   document.getElementById('finalScore').textContent = score;
   
   // Reset the input form
-  document.querySelector('.input-group').innerHTML = `
-    <input type="email" id="playerEmail" placeholder="Enter your email">
-    <div id="emailError" class="error"></div>
-    <button onclick="submitScore()">Submit Score</button>
-  `;
+  const inputGroup = document.querySelector('.input-group');
+  if (inputGroup) {
+    inputGroup.innerHTML = `
+      <form id="scoreForm" onsubmit="event.preventDefault(); submitScore();">
+        <input type="email" 
+          id="playerEmail" 
+          placeholder="Enter your email" 
+          inputmode="email" 
+          autocomplete="email"
+          required
+        >
+        <div id="emailError" class="error"></div>
+        <button type="submit" id="submitButton">Submit Score</button>
+      </form>
+    `;
+  }
   
   leaderboardUI.style.display = 'block';
   await updateLeaderboard();
@@ -805,7 +821,7 @@ window.submitScore = submitScore;
 function touchMoved(event) {
   if (event) event.preventDefault();
   if (isTouching && !gameOver && touches.length > 0) {
-    let touchX = touches[0].clientX || touches[0].x;
+    let touchX = touches[0].pageX || touches[0].clientX || touches[0].x;
     lastTouchX = touchX;
   }
   return false;
@@ -814,8 +830,7 @@ function touchMoved(event) {
 function touchStarted(event) {
   if (event) event.preventDefault();
   if (touches.length > 0) {
-    touchStartX = touches[0].clientX || touches[0].x;
-    touchStartY = touches[0].clientY || touches[0].y;
+    touchStartX = touches[0].pageX || touches[0].clientX || touches[0].x;
     lastTouchX = touchStartX;
     isTouching = true;
     

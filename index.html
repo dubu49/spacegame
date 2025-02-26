@@ -164,23 +164,13 @@
         <h3>Your Score: <span id="finalScore">0</span></h3>
       </div>
       <div class="input-group">
-        <form id="scoreForm" onsubmit="event.preventDefault(); submitScore();">
-          <input type="email" 
-            id="playerEmail" 
-            placeholder="Enter your email" 
-            inputmode="email" 
-            autocomplete="email"
-            required
-          >
-          <div id="emailError" class="error"></div>
-          <button type="submit" id="submitButton">Submit Score</button>
-        </form>
+        <!-- Form will be inserted here by JavaScript -->
       </div>
       <div id="leaderboard">
         <h3>Top Scores</h3>
         <div id="leaderboardEntries"></div>
       </div>
-      <button type="button" class="restart-button" ontouchend="restartGame()">Play Again</button>
+      <button type="button" class="restart-button" onclick="restartGame()">Play Again</button>
     </div>
   </body>
 </html>
