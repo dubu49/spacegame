@@ -398,11 +398,11 @@ class Player {
       this.x = constrain(this.x + this.speed, this.width/2, width - this.width/2);
     }
     
-    // Add touch movement smoothing
+    // Improved touch movement
     if (isTouching && touches.length > 0) {
-      let touchX = touches[0].x;
+      let touchX = touches[0].clientX;
       let targetX = constrain(touchX, this.width/2, width - this.width/2);
-      this.x = lerp(this.x, targetX, 0.1); // Smooth movement
+      this.x = lerp(this.x, targetX, 0.2); // Increased smoothing for better control
     }
   }
 
@@ -774,8 +774,8 @@ async function submitScore() {
 function touchStarted(event) {
   if (event) event.preventDefault();
   if (touches.length > 0) {
-    touchStartX = touches[0].x;
-    touchStartY = touches[0].y;
+    touchStartX = touches[0].clientX; // Use clientX instead of x
+    touchStartY = touches[0].clientY; // Use clientY instead of y
     lastTouchX = touchStartX;
     isTouching = true;
     
@@ -790,11 +790,11 @@ function touchStarted(event) {
 function touchMoved(event) {
   if (event) event.preventDefault();
   if (isTouching && !gameOver && touches.length > 0) {
-    let touchX = touches[0].x;
+    let touchX = touches[0].clientX; // Use clientX
     let deltaX = (touchX - lastTouchX) * touchSensitivity;
     
     // Move player based on swipe
-    player.x = constrain(player.x + deltaX, player.width/2, width - player.width/2);
+    player.x = constrain(player.x + deltaX * 0.8, player.width/2, width - player.width/2);
     lastTouchX = touchX;
   }
   return false;
