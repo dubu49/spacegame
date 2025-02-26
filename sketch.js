@@ -411,11 +411,12 @@ class Player {
       this.x = constrain(this.x + this.speed, this.width/2, width - this.width/2);
     }
     
-    // Improved touch movement
+    // Fix touch movement
     if (isTouching && touches.length > 0) {
-      let touchX = touches[0].clientX;
+      let touchX = touches[0].clientX || touches[0].x;
       let targetX = constrain(touchX, this.width/2, width - this.width/2);
-      this.x = lerp(this.x, targetX, 0.2); // Increased smoothing for better control
+      // Use smoother movement
+      this.x = lerp(this.x, targetX, 0.15);
     }
   }
 
@@ -800,12 +801,21 @@ async function submitScore() {
 // Add this to handle form submission
 window.submitScore = submitScore;
 
-// Update touch controls
+// Update touch functions
+function touchMoved(event) {
+  if (event) event.preventDefault();
+  if (isTouching && !gameOver && touches.length > 0) {
+    let touchX = touches[0].clientX || touches[0].x;
+    lastTouchX = touchX;
+  }
+  return false;
+}
+
 function touchStarted(event) {
   if (event) event.preventDefault();
   if (touches.length > 0) {
-    touchStartX = touches[0].clientX;
-    touchStartY = touches[0].clientY;
+    touchStartX = touches[0].clientX || touches[0].x;
+    touchStartY = touches[0].clientY || touches[0].y;
     lastTouchX = touchStartX;
     isTouching = true;
     
