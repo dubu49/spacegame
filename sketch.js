@@ -29,9 +29,20 @@ const supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABAS
 let leaderboardUI;
 let isSubmittingScore = false;
 
+// Add these global variables at the top
+let touchStartX = 0;
+let isTouching = false;
+
 // Setup function to initialize the game
 function setup() {
-  createCanvas(800, 600);
+  // Make canvas responsive
+  let canvasWidth = min(windowWidth, 800);
+  let canvasHeight = min(windowHeight, 600);
+  createCanvas(canvasWidth, canvasHeight);
+  
+  // Adjust game elements for screen size
+  player.y = height - 40;
+  
   // Initialize leaderboardUI
   leaderboardUI = document.getElementById('leaderboardUI');
   
@@ -164,6 +175,11 @@ function draw() {
       if (particles[i].isDead()) {
         particles.splice(i, 1);
       }
+    }
+
+    // Add auto-shoot for touch devices
+    if (isTouching && millis() - player.lastShotTime > player.shotCooldown) {
+      player.shoot();
     }
   }
 }
@@ -367,11 +383,12 @@ class Player {
   }
 
   move() {
-    if (keyIsDown(LEFT_ARROW) && this.x > this.width / 2) {
-      this.x -= this.speed;
+    // Keep existing keyboard controls
+    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) { // Left arrow or 'A'
+      this.x = constrain(this.x - this.speed, this.width/2, width - this.width/2);
     }
-    if (keyIsDown(RIGHT_ARROW) && this.x < width - this.width / 2) {
-      this.x += this.speed;
+    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) { // Right arrow or 'D'
+      this.x = constrain(this.x + this.speed, this.width/2, width - this.width/2);
     }
   }
 
@@ -737,4 +754,43 @@ async function submitScore() {
   } finally {
     isSubmittingScore = false;
   }
+}
+
+// Add these functions after setup()
+function touchStarted() {
+  touchStartX = touches[0].x;
+  isTouching = true;
+  
+  // Fire bullet on tap
+  if (!gameOver) {
+    player.shoot();
+  }
+  return false; // Prevents default
+}
+
+function touchMoved() {
+  if (isTouching && !gameOver) {
+    let touchX = touches[0].x;
+    let deltaX = touchX - touchStartX;
+    
+    // Move player based on swipe
+    player.x = constrain(player.x + deltaX, player.width/2, width - player.width/2);
+    touchStartX = touchX;
+  }
+  return false; // Prevents default
+}
+
+function touchEnded() {
+  isTouching = false;
+  return false; // Prevents default
+}
+
+// Add window resize handling
+function windowResized() {
+  let canvasWidth = min(windowWidth, 800);
+  let canvasHeight = min(windowHeight, 600);
+  resizeCanvas(canvasWidth, canvasHeight);
+  
+  // Adjust player position
+  player.y = height - 40;
 }
