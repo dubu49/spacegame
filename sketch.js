@@ -31,17 +31,22 @@ let isSubmittingScore = false;
 
 // Add these global variables at the top
 let touchStartX = 0;
+let touchStartY = 0;
+let lastTouchX = 0;
 let isTouching = false;
+let touchSensitivity = 1.5; // Adjust this for faster/slower movement
 
 // Setup function to initialize the game
 function setup() {
   // Make canvas responsive
   let canvasWidth = min(windowWidth, 800);
   let canvasHeight = min(windowHeight, 600);
-  createCanvas(canvasWidth, canvasHeight);
+  let canvas = createCanvas(canvasWidth, canvasHeight);
   
-  // Adjust game elements for screen size
-  player.y = height - 40;
+  // Prevent default touch behaviors on canvas
+  canvas.elt.addEventListener('touchstart', preventDefault, { passive: false });
+  canvas.elt.addEventListener('touchmove', preventDefault, { passive: false });
+  canvas.elt.addEventListener('touchend', preventDefault, { passive: false });
   
   // Initialize leaderboardUI
   leaderboardUI = document.getElementById('leaderboardUI');
@@ -56,6 +61,7 @@ function setup() {
     });
   }
   player = new Player();
+  player.y = height - 40;
   spawnEnemies(5, 3);
 }
 
@@ -316,6 +322,7 @@ class Player {
     this.invulnerable = false;
     this.powerup = null;
     this.powerupEndTime = 0;
+    this.touchSpeedMultiplier = 1.2; // Adjust for touch control responsiveness
   }
 
   hit() {
@@ -384,11 +391,18 @@ class Player {
 
   move() {
     // Keep existing keyboard controls
-    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) { // Left arrow or 'A'
+    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
       this.x = constrain(this.x - this.speed, this.width/2, width - this.width/2);
     }
-    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) { // Right arrow or 'D'
+    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
       this.x = constrain(this.x + this.speed, this.width/2, width - this.width/2);
+    }
+    
+    // Add touch movement smoothing
+    if (isTouching && touches.length > 0) {
+      let touchX = touches[0].x;
+      let targetX = constrain(touchX, this.width/2, width - this.width/2);
+      this.x = lerp(this.x, targetX, 0.1); // Smooth movement
     }
   }
 
@@ -756,33 +770,45 @@ async function submitScore() {
   }
 }
 
-// Add these functions after setup()
-function touchStarted() {
-  touchStartX = touches[0].x;
-  isTouching = true;
-  
-  // Fire bullet on tap
-  if (!gameOver) {
-    player.shoot();
+// Update touch functions
+function touchStarted(event) {
+  if (event) event.preventDefault();
+  if (touches.length > 0) {
+    touchStartX = touches[0].x;
+    touchStartY = touches[0].y;
+    lastTouchX = touchStartX;
+    isTouching = true;
+    
+    // Fire bullet on tap
+    if (!gameOver) {
+      player.shoot();
+    }
   }
-  return false; // Prevents default
+  return false;
 }
 
-function touchMoved() {
-  if (isTouching && !gameOver) {
+function touchMoved(event) {
+  if (event) event.preventDefault();
+  if (isTouching && !gameOver && touches.length > 0) {
     let touchX = touches[0].x;
-    let deltaX = touchX - touchStartX;
+    let deltaX = (touchX - lastTouchX) * touchSensitivity;
     
     // Move player based on swipe
     player.x = constrain(player.x + deltaX, player.width/2, width - player.width/2);
-    touchStartX = touchX;
+    lastTouchX = touchX;
   }
-  return false; // Prevents default
+  return false;
 }
 
-function touchEnded() {
+function touchEnded(event) {
+  if (event) event.preventDefault();
   isTouching = false;
-  return false; // Prevents default
+  return false;
+}
+
+// Add these functions to handle all touch events
+function preventDefault(e) {
+  e.preventDefault();
 }
 
 // Add window resize handling
