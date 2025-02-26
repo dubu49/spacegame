@@ -699,6 +699,14 @@ class Particle {
 async function showLeaderboard() {
   leaderboardUI = document.getElementById('leaderboardUI');
   document.getElementById('finalScore').textContent = score;
+  
+  // Reset the input form
+  document.querySelector('.input-group').innerHTML = `
+    <input type="email" id="playerEmail" placeholder="Enter your email">
+    <div id="emailError" class="error"></div>
+    <button onclick="submitScore()">Submit Score</button>
+  `;
+  
   leaderboardUI.style.display = 'block';
   await updateLeaderboard();
 }
@@ -733,6 +741,9 @@ async function submitScore() {
   const errorDiv = document.getElementById('emailError');
   const email = emailInput.value.trim();
   
+  // Clear any previous errors
+  errorDiv.textContent = '';
+  
   // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
@@ -740,12 +751,14 @@ async function submitScore() {
     return;
   }
   
-  errorDiv.textContent = '';
   isSubmittingScore = true;
-
+  
   try {
-    console.log('Submitting score:', { email, score }); // Debug log
-    
+    // Show loading state
+    const submitButton = document.querySelector('.input-group button');
+    submitButton.textContent = 'Submitting...';
+    submitButton.disabled = true;
+
     const { data, error } = await supabaseClient
       .from('highscores')
       .insert([
@@ -753,18 +766,23 @@ async function submitScore() {
       ])
       .select();
 
-    if (error) {
-      console.error('Supabase error:', error); // Debug log
-      throw error;
-    }
+    if (error) throw error;
+
+    // Success state
+    document.querySelector('.input-group').innerHTML = `
+      <p style="color: #0f0; margin: 20px 0;">Score submitted successfully!</p>
+      <p>Your score: ${score}</p>
+    `;
     
-    console.log('Score submitted successfully:', data); // Debug log
     await updateLeaderboard();
-    emailInput.value = '';
-    document.querySelector('.input-group').innerHTML = '<p>Score submitted successfully!</p>';
   } catch (error) {
     console.error('Error submitting score:', error);
     errorDiv.textContent = 'Error submitting score. Please try again.';
+    
+    // Reset button state
+    const submitButton = document.querySelector('.input-group button');
+    submitButton.textContent = 'Submit Score';
+    submitButton.disabled = false;
   } finally {
     isSubmittingScore = false;
   }
